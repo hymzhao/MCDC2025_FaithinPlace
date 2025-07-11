@@ -1,0 +1,6 @@
+# .gitignore
+.venv/        # Ignore your virtual environment folder
+__pycache__/  # Ignore Python cache files
+*.pyc         # Ignore compiled Python files
+.DS_Store     # Ignore macOS specific files
+
