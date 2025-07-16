@@ -55,7 +55,7 @@ def create_tree_location_map(df):
         fig.update_layout(
             mapbox_center={"lat": 41.8, "lon": -88.0},  # Illinois-ish
             margin={"r":0, "t":40, "l":0, "b":0},
-            title="Tree Planting Locations in the Midwest"
+            title="Tree Planting Locations"
         )
 
 
