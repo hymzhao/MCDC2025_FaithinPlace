@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import pandas as pd 
+import ast
 
 # import functions from src modules
 from src.data_cleaner import load_project_data
@@ -100,7 +101,10 @@ if st.sidebar.button("Community & Workforce Impact"):
     st.session_state.page = "Community & Workforce Impact"
 
 # Load data 
-df = load_project_data("data/Geocoded_MCDC-Sample-Info.csv")
+df = load_project_data({
+    'original_data': "data/Geocoded_MCDC-Sample-Info.csv",
+    'new_data': "data/usda_species_extracted_with_ollama_and_goals.csv"
+})
 
 # Global Filter to be applied to entire dashboard
 filtered_df = df
@@ -132,7 +136,6 @@ if df is not None:
             filtered_df = df[df['Organization Name'].isin(selected_organizations)]
     else:
         st.sidebar.warning("'Organization Name' column not found for filter.")
-
 
 # Render pages
 if st.session_state.page == "Project Overview":
