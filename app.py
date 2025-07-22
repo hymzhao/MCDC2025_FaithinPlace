@@ -5,7 +5,7 @@ import ast
 
 # import functions from src modules
 from src.data_cleaner import load_project_data
-from src.map_visualizations import create_tree_location_map, create_species_diversity_chart
+from src.map_visualizations import create_tree_location_map, create_species_diversity_chart, create_goals_wordcloud
 st.set_page_config(layout = 'wide')
 
 # --- Custom CSS for button and overall styling ---
@@ -239,5 +239,22 @@ elif st.session_state.page == "Tree Planting Map":
         st.warning("No data available for the selected organization(s). Please adjust your filter.")
     else: # df is None
         st.warning("Data not loaded. Cannot display map or metrics.")
+
+elif st.session_state.page == "Community & Workforce Impact":
+    st.header("Community and Workforce Impact")
+    st.write("""
+    This section highlights the key goals and themes driving the projects,
+    focusing on community engagement, education, and workforce development.
+    The size of a word in the cloud below corresponds to how frequently it appears
+    in the project goals described by the participating organizations.
+    """)
+
+    if filtered_df is not None and not filtered_df.empty:
+        # Call the new word cloud function
+        create_goals_wordcloud(filtered_df)
+    elif filtered_df.empty:
+        st.warning("No data available for the selected organization(s). Please adjust your filter.")
+    else:
+        st.warning("Data not loaded. Cannot display the word cloud.")
 
 st.write("More dashboards and detailed metrics will be integrated here as our project progresses.")

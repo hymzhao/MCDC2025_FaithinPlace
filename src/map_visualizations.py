@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from collections import Counter
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
 
 def create_tree_location_map(df):
     """
@@ -88,3 +90,41 @@ def create_species_diversity_chart(df):
         height=max(400, len(species_df) * 25) # Dynamically adjust height
     )
     st.plotly_chart(fig, use_container_width=True)
+
+def create_goals_wordcloud(df):
+    """
+    Generates and saves a word cloud from the 'Goals from Ollama' column.
+    """
+    if df is None or 'Goals from Ollama' not in df.columns:
+        st.warning("Project goals data not available to create a word cloud.")
+        return
+
+    # Combine all goals into a single string of text
+    all_goals_list = [goal for sublist in df['Goals from Ollama'] for goal in sublist]
+
+    if not all_goals_list:
+        st.info("No project goals to display in the word cloud for the selected filters.")
+        return
+
+    text = ' '.join(all_goals_list)
+
+    # Generate the word cloud
+    wordcloud = WordCloud(
+        width=800,
+        height=400,
+        background_color='white',
+        colormap='viridis', # A nice green-blue color map
+        max_words=100,
+        contour_width=3,
+        contour_color='steelblue',
+        collocations=False # Avoids pairing words together
+    ).generate(text)
+
+    # Save the generated image
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    
+    # Display the word cloud in Streamlit using st.pyplot()
+    st.pyplot(plt.gcf())
