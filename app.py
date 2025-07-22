@@ -5,8 +5,7 @@ import ast
 
 # import functions from src modules
 from src.data_cleaner import load_project_data
-from src.map_visualizations import create_tree_location_map
-
+from src.map_visualizations import create_tree_location_map, create_species_diversity_chart
 st.set_page_config(layout = 'wide')
 
 # --- Custom CSS for button and overall styling ---
@@ -231,9 +230,10 @@ elif st.session_state.page == "Tree Planting Map":
             num_states = filtered_df['Project Location State'].nunique()
             st.metric(label="Unique Project States", value=num_states)
 
-            # You can add more metrics here if relevant, e.g.,
-            # avg_trees_per_org = total_trees / num_organizations if num_organizations > 0 else 0
-            # st.metric(label="Avg. Trees Per Org.", value=f"{avg_trees_per_org:,.0f}")
+        # --- New Section for Species Diversity Chart ---
+        st.header("Species Diversity")
+        create_species_diversity_chart(filtered_df)
+
 
     elif filtered_df.empty:
         st.warning("No data available for the selected organization(s). Please adjust your filter.")

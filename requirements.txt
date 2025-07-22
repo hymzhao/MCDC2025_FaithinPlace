@@ -2,6 +2,7 @@
 streamlit
 pandas
 plotly-express
+ast
 
 # use the below line to install the listed libraries in your virtual environment
 # pip install -r requirements.txt 
