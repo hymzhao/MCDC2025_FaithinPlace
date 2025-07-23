@@ -1,11 +1,17 @@
 # app.py
 import streamlit as st
-import pandas as pd 
+import pandas as pd
 import ast
 
 # import functions from src modules
 from src.data_cleaner import load_project_data
-from src.map_visualizations import create_tree_location_map, create_species_diversity_chart, create_goals_wordcloud
+from src.map_visualizations import (
+    create_layered_map, 
+    create_species_diversity_chart,
+    create_goals_wordcloud
+)
+
+
 st.set_page_config(layout = 'wide')
 
 # --- Custom CSS for button and overall styling ---
@@ -204,40 +210,34 @@ if st.session_state.page == "Project Overview":
 elif st.session_state.page == "Tree Planting Map":
     st.header("Tree Planting Map")
 
-    if filtered_df is not None and not filtered_df.empty: # Ensure filtered_df is not empty
-        # Create columns for metrics and map
-        col1, col2 = st.columns([0.7, 0.3]) # 70% for map, 30% for metrics
+    if filtered_df is not None and not filtered_df.empty:
+        col1, col2 = st.columns([0.7, 0.3])
 
-        with col1: # This column will contain the map
-            create_tree_location_map(filtered_df)
+        with col1:
+            # Call the new layered map function here
+            create_layered_map(filtered_df)
 
-        with col2: # This column will contain the key metrics
+        with col2:
             st.subheader("Key Metrics")
-
-            # Metric 1: Total Number of Trees to be Planted
             total_trees = filtered_df['# Trees To Be Planted'].sum()
             st.metric(label="Total Trees To Be Planted", value=f"{total_trees:,.0f}")
-
-            # Metric 2: Number of Participating Organizations
             num_organizations = filtered_df['Organization Name'].nunique()
             st.metric(label="Participating Organizations", value=num_organizations)
-
-            # Metric 3: Number of Unique Project Cities
             num_cities = filtered_df['Project Location City'].nunique()
             st.metric(label="Unique Project Cities", value=num_cities)
-
-            # Metric 4: Number of Unique Project States
             num_states = filtered_df['Project Location State'].nunique()
             st.metric(label="Unique Project States", value=num_states)
+            st.markdown("""
+            **About the Score:** The background map shows the Tree Equity Score for each census block group. A lower score (red/yellow) indicates a higher priority for tree planting.
+            """)
 
-        # --- New Section for Species Diversity Chart ---
+        st.markdown("---")
         st.header("Species Diversity")
         create_species_diversity_chart(filtered_df)
 
-
     elif filtered_df.empty:
         st.warning("No data available for the selected organization(s). Please adjust your filter.")
-    else: # df is None
+    else:
         st.warning("Data not loaded. Cannot display map or metrics.")
 
 elif st.session_state.page == "Community & Workforce Impact":

@@ -49,6 +49,7 @@ def normalize_species_list(species_list):
         'hackberry': 'Hackberry', 'hack berry': 'Hackberry', 'celtis occidentalis': 'Hackberry',
         'celtis occidentalis-hackberry': 'Hackberry', 'common hackberry': 'Hackberry',
         'sugarberry': 'Hackberry',
+        'Fringetree': 'Fringe Tree', 'Fringe Tree': 'Fringe Tree',
         # --- Hazelnut ---
         'hazelnut': 'Hazelnut', 'hedges of hazelnuts': 'Hazelnut', 'american hazelnut (corylus americana)': 'Hazelnut',
         'corylus americana': 'Hazelnut',

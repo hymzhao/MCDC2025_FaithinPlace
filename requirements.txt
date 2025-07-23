@@ -3,6 +3,8 @@ streamlit
 pandas
 plotly-express
 ast
+wordcloud
+geopandas
 
 # use the below line to install the listed libraries in your virtual environment
 # pip install -r requirements.txt 
