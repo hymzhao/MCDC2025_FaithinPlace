@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -6,6 +7,9 @@ from collections import Counter
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import geopandas as gpd
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 
 def create_layered_map(df):
     """
@@ -118,20 +122,68 @@ def create_species_diversity_chart(df):
     )
     st.plotly_chart(fig, use_container_width=True)
 
-def create_goals_wordcloud(df):
-    """Generates and displays a word cloud from the 'Goals from Ollama' column."""
-    if df is None or 'Goals from Ollama' not in df.columns:
-        st.warning("Project goals data not available to create a word cloud.")
+def create_impact_category_chart(df):
+    """
+    Creates a bar chart showing the number of organizations in each goal category.
+    """
+    if df is None or 'Goal Categories' not in df.columns:
+        st.warning("Goal category data not available.")
         return
+
+    # Explode the lists of categories into separate rows and count them
+    category_counts = df.explode('Goal Categories')['Goal Categories'].value_counts().reset_index()
+    category_counts.columns = ['Category', 'Organization Count']
+
+    fig = px.bar(
+        category_counts,
+        x='Organization Count',
+        y='Category',
+        orientation='h',
+        title='Primary Project Impact Areas',
+        labels={'Organization Count': 'Number of Organizations', 'Category': 'Impact Area'},
+        color_discrete_sequence=['#1a7342'] # A darker green from your theme
+    )
+    fig.update_layout(yaxis={'categoryorder': 'total ascending'})
+    st.plotly_chart(fig, use_container_width=True)
+
+
+# --- UPDATED WORD CLOUD FUNCTION ---
+def create_goals_wordcloud(df):
+    """
+    Generates a lemmatized and heavily cleaned word cloud from project goals.
+    """
+    if df is None or 'Goals from Ollama' not in df.columns:
+        st.warning("Project goals data not available.")
+        return
+
     all_goals_list = [goal for sublist in df['Goals from Ollama'] for goal in sublist]
     if not all_goals_list:
-        st.info("No project goals to display in the word cloud for the selected filters.")
+        st.info("No project goals to display in the word cloud.")
         return
+
     text = ' '.join(all_goals_list)
+
+    lemmatizer = WordNetLemmatizer()
+    tokens = word_tokenize(text)
+    lemmatized_text = ' '.join([lemmatizer.lemmatize(word.lower()) for word in tokens])
+
+    # --- EVEN MORE AGGRESSIVE STOPWORDS LIST ---
+    stopwords = set([
+        'of', 'the', 'for', 'a', 'in', 'with', 'project', 'tree', 'to', 'planting', 'through', 'provide', 'create', 'help', 'well',
+        'also', 'area', 'will', 'plan', 'our', 'place', 'campus', 'effort',
+        'surrounding', 'natural', 'goal', 'ha', 'student', 'program', 'new',
+        'year', 'work', 'member', 'organization', 'group', 'city',
+        'state', 'local', 'partner', 'people', 'site', 'ground', 'chicago',
+        'illinois', 'indiana', 'wisconsin', 'hand', 'etc', 'use', 'need', 'enhance',
+        'additional', 'make', 'ensure', 'within', 'around', 'including', 'and', 'to'
+    ])
+
     wordcloud = WordCloud(
-        width=800, height=400, background_color='white', colormap='viridis',
-        max_words=100, contour_width=3, contour_color='steelblue', collocations=False
-    ).generate(text)
+        width=800, height=400, background_color='white',
+        colormap='Greens', max_words=100, stopwords=stopwords,
+        collocations=False
+    ).generate(lemmatized_text)
+
     plt.figure(figsize=(10, 5))
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")

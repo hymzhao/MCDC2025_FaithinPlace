@@ -129,51 +129,62 @@ def normalize_species_list(species_list):
     return sorted(list(cleaned_list))
 
 
+def categorize_project_goals(goals_list):
+    """
+    Analyzes a list of goals and assigns them to predefined impact categories.
+    """
+    categories = set()
+    goal_text = ' '.join(goals_list).lower()
+
+    # Define keywords for each category
+    category_keywords = {
+        "Environmental & Climate": ['environment', 'sustainability', 'climate', 'canopy', 'green', 'beautification', 'ecosystem', 'air quality', 'stormwater', 'biodiversity'],
+        "Youth & Education": ['education', 'youth', 'students', 'learning', 'school', 'educational', 'stem'],
+        "Community Building": ['community', 'engagement', 'neighborhood', 'beautify', 'volunteer', 'public', 'space', 'gathering', 'social'],
+        "Workforce & Economic": ['workforce', 'job', 'skills', 'economic', 'employment', 'career', 'development'],
+        "Food & Agriculture": ['food', 'agriculture', 'orchard', 'fruit', 'harvest', 'garden']
+    }
+
+    for category, keywords in category_keywords.items():
+        if any(keyword in goal_text for keyword in keywords):
+            categories.add(category)
+
+    if not categories:
+        return ["General Improvement"] # Default category
+    return sorted(list(categories))
+
 @st.cache_data
 def load_project_data(file_paths):
     """
-    Goal is to load the project data from a csv file and perform initial cleaning.
+    Loads, cleans, and categorizes project data.
     """
     try:
         df_original = pd.read_csv(file_paths['original_data'])
         df_new_nlp = pd.read_csv(file_paths['new_data'])
 
+        # --- Merging and Basic Cleaning (unchanged) ---
         merge_on_candidate_cols = ['Organization Name', 'Project Description']
-        actual_merge_on_cols = [
-            col for col in merge_on_candidate_cols
-            if col in df_original.columns and col in df_new_nlp.columns
-        ]
+        actual_merge_on_cols = [col for col in merge_on_candidate_cols if col in df_original.columns and col in df_new_nlp.columns]
         if not actual_merge_on_cols:
-            st.error("Error: No common identifying columns found. Cannot merge.")
+            st.error("Error: No common identifying columns found.")
             return None
-
         cols_from_new_nlp = actual_merge_on_cols + ['USDA Matched Species', 'Species from Ollama', 'Goals from Ollama']
         cols_from_new_nlp_existing = [col for col in cols_from_new_nlp if col in df_new_nlp.columns]
-
         df_merged = pd.merge(
-            df_original,
-            df_new_nlp[cols_from_new_nlp_existing].drop_duplicates(),
-            on=actual_merge_on_cols,
-            how='left',
-            suffixes=('_original', '_nlp')
+            df_original, df_new_nlp[cols_from_new_nlp_existing].drop_duplicates(),
+            on=actual_merge_on_cols, how='left', suffixes=('_original', '_nlp')
         )
-
         df_cleaned = df_merged.copy()
-
         if 'Project Location State' in df_cleaned.columns:
             state_mapping = {'ILLINOIS': 'IL', 'INDIANA': 'IN', 'WISCONSIN': 'WI'}
             df_cleaned['Project Location State'] = df_cleaned['Project Location State'].astype(str).str.strip().str.upper().replace(state_mapping)
             valid_states = ['IL', 'IN', 'WI']
-            df_cleaned['Project Location State'] = df_cleaned['Project Location State'].apply(
-                 lambda x: x if x in valid_states else 'Other/Invalid'
-            )
-            
+            df_cleaned['Project Location State'] = df_cleaned['Project Location State'].apply(lambda x: x if x in valid_states else 'Other/Invalid')
         for col in ['Latitude', 'Longitude', '# Trees To Be Planted']:
             if col in df_cleaned.columns:
                 df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors='coerce')
         df_cleaned.dropna(subset=['Latitude', 'Longitude', '# Trees To Be Planted'], inplace=True)
         df_cleaned['# Trees To Be Planted'] = df_cleaned['# Trees To Be Planted'].astype(int)
-
         for col, start_char, empty_val in [
             ('Species from Ollama', '{', {}),
             ('USDA Matched Species', '[', []),
@@ -184,18 +195,22 @@ def load_project_data(file_paths):
                     lambda x: ast.literal_eval(x) if pd.notna(x) and isinstance(x, str) and x.strip().startswith(start_char) else empty_val
                 )
 
+        # --- Species Cleaning (unchanged) ---
         def combine_species(row):
             ollama_species = list(row.get('Species from Ollama', {}).keys())
             usda_species = row.get('USDA Matched Species', [])
             return list(set(ollama_species + usda_species))
-
         df_cleaned['All Species'] = df_cleaned.apply(combine_species, axis=1)
         df_cleaned['Cleaned Species'] = df_cleaned['All Species'].apply(normalize_species_list)
 
+        # --- ADD GOAL CATEGORIZATION ---
+        if 'Goals from Ollama' in df_cleaned.columns:
+            df_cleaned['Goal Categories'] = df_cleaned['Goals from Ollama'].apply(categorize_project_goals)
+
         return df_cleaned
     except FileNotFoundError as e:
-        st.error(f"Error: One of the data files was not found. Please ensure '{e.filename}' is in the correct path.")
+        st.error(f"Error: A data file was not found. Please check '{e.filename}'.")
         return None
     except Exception as e:
-        st.error(f"An error occurred while loading or processing data: {e}.")
+        st.error(f"An error occurred while processing data: {e}.")
         return None

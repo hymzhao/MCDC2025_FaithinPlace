@@ -2,13 +2,17 @@
 import streamlit as st
 import pandas as pd
 import ast
+from collections import Counter
+from itertools import combinations
+
 
 # import functions from src modules
 from src.data_cleaner import load_project_data
 from src.map_visualizations import (
-    create_layered_map, 
+    create_layered_map,
     create_species_diversity_chart,
-    create_goals_wordcloud
+    create_goals_wordcloud,
+    create_impact_category_chart 
 )
 
 
@@ -207,59 +211,51 @@ if st.session_state.page == "Project Overview":
     """)
     st.markdown("---") # Visual separator
 
-elif st.session_state.page == "Tree Planting Map":
-    st.header("Tree Planting Map")
-
-    if filtered_df is not None and not filtered_df.empty:
-        col1, col2 = st.columns([0.7, 0.3])
-
-        with col1:
-            # Call the new layered map function here
-            create_layered_map(filtered_df)
-
-        with col2:
-            st.subheader("Key Metrics")
-            total_trees = filtered_df['# Trees To Be Planted'].sum()
-            st.metric(label="Total Trees To Be Planted", value=f"{total_trees:,.0f}")
-            num_organizations = filtered_df['Organization Name'].nunique()
-            st.metric(label="Participating Organizations", value=num_organizations)
-            num_cities = filtered_df['Project Location City'].nunique()
-            st.metric(label="Unique Project Cities", value=num_cities)
-            num_states = filtered_df['Project Location State'].nunique()
-            st.metric(label="Unique Project States", value=num_states)
-
-            with st.expander("What is the Tree Equity Score?"):
-                st.write("""
-                Tree Equity Score is a nationwide, block group-level score ranging from 0-100 that highlights inequitable access to trees.
-                The lower the score, the greater the priority for tree planting. A score of 100 means the block group has met a minimum standard
-                for tree cover appropriate for the area's natural biome and built environment.
-                """)
-                # Make sure the image file is in an 'images' folder
-                st.image("images/Screenshot 2025-07-23 at 12.49.08 PM.png", caption="Components of the Tree Equity Score.")
-
-        st.header("Species Diversity")
-        create_species_diversity_chart(filtered_df)
-
-    elif filtered_df.empty:
-        st.warning("No data available for the selected organization(s). Please adjust your filter.")
-    else:
-        st.warning("Data not loaded. Cannot display map or metrics.")
-
 elif st.session_state.page == "Community & Workforce Impact":
-    st.header("Community and Workforce Impact")
+    st.header("Community and Workforce Impact Analysis")
     st.write("""
-    This section highlights the key goals and themes driving the projects,
-    focusing on community engagement, education, and workforce development.
-    The size of a word in the cloud below corresponds to how frequently it appears
-    in the project goals described by the participating organizations.
+    This section summarizes the primary goals of the grant projects. The chart shows the number of organizations
+    tackling key impact areas, while the metrics provide deeper insights into the strategic focus of the portfolio.
     """)
 
-    if filtered_df is not None and not filtered_df.empty:
-        # Call the new word cloud function
-        create_goals_wordcloud(filtered_df)
-    elif filtered_df.empty:
-        st.warning("No data available for the selected organization(s). Please adjust your filter.")
-    else:
-        st.warning("Data not loaded. Cannot display the word cloud.")
+    if filtered_df is not None and not filtered_df.empty and 'Goal Categories' in filtered_df.columns:
+        col1, col2 = st.columns([0.6, 0.4])
 
-st.write("More dashboards and detailed metrics will be integrated here as our project progresses.")
+        with col1:
+            create_impact_category_chart(filtered_df)
+
+        with col2:
+            st.subheader("Deeper Insights")
+
+            # Metric 1: Multi-Goal Projects
+            num_multi_goal_orgs = filtered_df['Goal Categories'].apply(lambda x: len(x) > 1).sum()
+            total_orgs = len(filtered_df)
+            percent_multi_goal = (num_multi_goal_orgs / total_orgs * 100) if total_orgs > 0 else 0
+            st.metric(
+                label="Multi-faceted Projects",
+                value=f"{num_multi_goal_orgs}",
+                help=f"{percent_multi_goal:.1f}% of organizations have goals in more than one impact category."
+            )
+
+            # --- METRIC 2: REVISED TO AVOID CUT-OFF ---
+            pairs = filtered_df['Goal Categories'].apply(lambda x: list(combinations(sorted(x), 2)))
+            pair_counts = Counter(p for sublist in pairs for p in sublist)
+            if pair_counts:
+                most_common_pair, count = pair_counts.most_common(1)[0]
+                # Use st.markdown for better text wrapping
+                st.markdown("##### Most Common Synergy")
+                st.markdown(f"**{' & '.join(most_common_pair)}**")
+                st.caption(f"This pair of goals appeared together in {count} projects.")
+
+            # Metric 3: Trees per Goal Category Table
+            st.write("##### Trees Planted per Impact Area")
+            trees_per_cat = filtered_df.explode('Goal Categories').groupby('Goal Categories')['# Trees To Be Planted'].sum().sort_values(ascending=False)
+            st.dataframe(trees_per_cat)
+
+        with st.expander("See Goal Keywords in a Word Cloud"):
+            create_goals_wordcloud(filtered_df)
+
+    elif filtered_df.empty:
+        st.warning("No data available for the selected organization(s).")
+    else:
+        st.warning("Data not loaded or no goal data available to display impact analysis.")
