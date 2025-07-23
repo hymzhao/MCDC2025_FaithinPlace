@@ -227,11 +227,16 @@ elif st.session_state.page == "Tree Planting Map":
             st.metric(label="Unique Project Cities", value=num_cities)
             num_states = filtered_df['Project Location State'].nunique()
             st.metric(label="Unique Project States", value=num_states)
-            st.markdown("""
-            **About the Score:** The background map shows the Tree Equity Score for each census block group. A lower score (red/yellow) indicates a higher priority for tree planting.
-            """)
 
-        st.markdown("---")
+            with st.expander("What is the Tree Equity Score?"):
+                st.write("""
+                Tree Equity Score is a nationwide, block group-level score ranging from 0-100 that highlights inequitable access to trees.
+                The lower the score, the greater the priority for tree planting. A score of 100 means the block group has met a minimum standard
+                for tree cover appropriate for the area's natural biome and built environment.
+                """)
+                # Make sure the image file is in an 'images' folder
+                st.image("images/Screenshot 2025-07-23 at 12.49.08 PM.png", caption="Components of the Tree Equity Score.")
+
         st.header("Species Diversity")
         create_species_diversity_chart(filtered_df)
 

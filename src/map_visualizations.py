@@ -77,24 +77,41 @@ def create_layered_map(df):
 
     st.plotly_chart(fig, use_container_width=True)
 
-# (The rest of the functions in this file are unchanged)
 def create_species_diversity_chart(df):
-    """Creates a bar chart using the cleaned and normalized species data."""
+    """
+    Creates a filtered and styled bar chart of species diversity.
+    """
     if df is None or 'Cleaned Species' not in df.columns:
         st.warning("Cleaned species data not available to create the diversity chart.")
         return
+
     all_species_list = [species for sublist in df['Cleaned Species'] for species in sublist]
     if not all_species_list:
         st.info("No species data to display in the chart for the selected filters.")
         return
+
     species_counts = Counter(all_species_list)
-    species_df = pd.DataFrame(species_counts.items(), columns=['Species', 'Count']).sort_values(by='Count', ascending=False)
+    species_df = pd.DataFrame(species_counts.items(), columns=['Species', 'Count'])
+
+    # --- CHANGE 1: Filter the DataFrame ---
+    # Keep only the species that appear in more than one project
+    species_df = species_df[species_df['Count'] > 1].sort_values(by='Count', ascending=False)
+
+    if species_df.empty:
+        st.info("No species are planted in more than one project for the selected filters.")
+        return
+
     fig = px.bar(
-        species_df, x='Count', y='Species', orientation='h',
-        title='Species Diversity Across Projects',
+        species_df,
+        x='Count',
+        y='Species',
+        orientation='h',
+        title='Most Common Species Across Projects',
         labels={'Count': 'Number of Projects Planting This Species', 'Species': 'Tree Species'},
-        color_discrete_sequence=px.colors.qualitative.Pastel
+        # --- CHANGE 2: Update the color ---
+        color_discrete_sequence=['#388e3c'] # A green from your website's theme
     )
+
     fig.update_layout(
         yaxis={'categoryorder':'total ascending'},
         height=max(400, len(species_df) * 25)

@@ -167,8 +167,7 @@ def load_project_data(file_paths):
             df_cleaned['Project Location State'] = df_cleaned['Project Location State'].apply(
                  lambda x: x if x in valid_states else 'Other/Invalid'
             )
-            st.sidebar.write("Unique Project States AFTER Standardization:", df_cleaned['Project Location State'].unique().tolist())
-
+            
         for col in ['Latitude', 'Longitude', '# Trees To Be Planted']:
             if col in df_cleaned.columns:
                 df_cleaned[col] = pd.to_numeric(df_cleaned[col], errors='coerce')
