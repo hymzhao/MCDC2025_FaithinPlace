@@ -12,4 +12,4 @@ else:
 # Download the necessary NLTK data packages
 nltk.download('punkt')
 nltk.download('wordnet')
-nltk.download('omw-1.4') # Open Multilingual Wordnet, good for compatibility
+nltk.download('omw-1.4') # Open Multilingual Wordnet, for better compatibility
