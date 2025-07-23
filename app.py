@@ -231,7 +231,7 @@ elif st.session_state.page == "Tree Planting Map":
                 The lower the score, the greater the priority for tree planting. A score of 100 means the block group has met a minimum standard
                 for tree cover appropriate for the area's natural biome and built environment.
                 """)
-                st.image("images/Screenshot 2025-07-23 at 12.49.08 PM.png", caption="Components of the Tree Equity Score.")
+                st.image("images/treequity.png", caption="Components of the Tree Equity Score.")
 
         st.markdown("---")
         st.header("Species Diversity")
