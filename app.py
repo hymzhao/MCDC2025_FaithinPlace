@@ -4,6 +4,28 @@ import pandas as pd
 import ast
 from collections import Counter
 from itertools import combinations
+import nltk
+import ssl
+
+# --- NEW: NLTK Data Downloader ---
+# This block checks for and downloads the necessary NLTK data packages
+# It's the most reliable method for Streamlit Cloud deployment.
+try:
+    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('corpora/wordnet')
+    nltk.data.find('corpora/omw-1.4')
+except LookupError:
+    # This is a workaround for a certificate verification issue
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+    else:
+        ssl._create_default_https_context = _create_unverified_https_context
+    
+    nltk.download('punkt')
+    nltk.download('wordnet')
+    nltk.download('omw-1.4')
 
 
 # import functions from src modules
