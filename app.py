@@ -7,10 +7,8 @@ from itertools import combinations
 import nltk
 import ssl
 
-# --- THIS MUST BE THE FIRST STREAMLIT COMMAND ---
 st.set_page_config(layout = 'wide')
 
-# --- NLTK DOWNLOADER ---
 @st.cache_resource
 def download_nltk_data():
     try:
@@ -26,7 +24,6 @@ def download_nltk_data():
 
 download_nltk_data()
 
-# --- IMPORT YOUR FUNCTIONS ---
 from src.data_cleaner import load_project_data
 from src.map_visualizations import (
     create_layered_map,
@@ -35,7 +32,7 @@ from src.map_visualizations import (
     create_impact_category_chart 
 )
 
-# --- CUSTOM CSS, HEADER, AND NAVIGATION ---
+
 st.markdown("""
 <style>
 /* Your full CSS here */
