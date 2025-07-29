@@ -6,7 +6,7 @@ def normalize_species_list(species_list):
     """
     Normalizes a list of species names using a comprehensive mapping dictionary.
     """
-    # This map is now much more detailed to handle the variations from your data.
+    # This map is now much more detailed to handle the variations from the data.
     species_normalization_map = {
         # --- Apple ---
         'apple': 'Apple', 'apple (malus domestica)': 'Apple', 'apples': 'Apple',

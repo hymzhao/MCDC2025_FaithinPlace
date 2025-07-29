@@ -91,6 +91,7 @@ div[data-testid="stSidebarNav"] button {
 div[data-testid="stSidebarNav"] button:hover {
     background-color: #248c24;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -251,30 +252,19 @@ elif st.session_state.page == "Community & Workforce Impact":
         with col2:
             st.subheader("Deeper Insights")
             
-            # --- REVISED: Multi-faceted Projects ---
-            st.markdown("#### Multi-faceted Projects") # Label
+            # Reverted back to the original st.metric style
             num_multi_goal_orgs = filtered_df['Goal Categories'].apply(lambda x: len(x) > 1).sum()
             total_orgs = len(filtered_df)
             percent_multi_goal = (num_multi_goal_orgs / total_orgs * 100) if total_orgs > 0 else 0
             
-            st.markdown(f"**{num_multi_goal_orgs} Projects**") # Value
-            st.caption(f"{percent_multi_goal:.1f}% of organizations have goals in more than one impact category.") # Help text
-            
-            # --- Top Goal Synergy ---
-            st.markdown("#### Top Goal Synergy") 
+            st.metric(
+                label="Multi-faceted Projects",
+                value=f"{num_multi_goal_orgs} Projects",
+                help=f"{percent_multi_goal:.1f}% of organizations have goals in more than one impact category."
+            )
 
-            pairs = filtered_df['Goal Categories'].apply(lambda x: list(combinations(sorted(x), 2)))
-            pair_counts = Counter(p for sublist in pairs for p in sublist)
-            
-            if pair_counts:
-                most_common_pair, count = pair_counts.most_common(1)[0]
-                st.markdown(f"**{' and '.join(most_common_pair)}**") 
-                st.caption(f"This combination appeared in {count} projects.")
-            else:
-                st.markdown("**N/A**")
-                st.caption("No projects with overlapping goals found.")
-
-            st.write("#### Trees Planted per Impact Area")
+            # --- Trees Planted per Impact Area ---
+            st.write("##### Trees Planted per Impact Area")
             trees_per_cat = filtered_df.explode('Goal Categories').groupby('Goal Categories')['# Trees To Be Planted'].sum().sort_values(ascending=False)
             st.dataframe(trees_per_cat)
             
@@ -282,9 +272,3 @@ elif st.session_state.page == "Community & Workforce Impact":
             create_goals_wordcloud(filtered_df)
     else:
         st.warning("No goal data available for the selected filters.")
-
-
-
-
-
-
