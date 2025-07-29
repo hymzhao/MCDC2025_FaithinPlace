@@ -9,20 +9,20 @@ import ssl
 
 st.set_page_config(layout = 'wide')
 
-@st.cache_resource
-def download_nltk_data():
-    try:
-        _create_unverified_https_context = ssl._create_unverified_context
-    except AttributeError:
-        pass
-    else:
-        ssl._create_default_https_context = _create_unverified_https_context
+# @st.cache_resource
+# def download_nltk_data():
+#     try:
+#         _create_unverified_https_context = ssl._create_unverified_context
+#     except AttributeError:
+#         pass
+#     else:
+#         ssl._create_default_https_context = _create_unverified_https_context
     
-    nltk.download('punkt')
-    nltk.download('wordnet')
-    nltk.download('omw-1.4')
+#     nltk.download('punkt')
+#     nltk.download('wordnet')
+#     nltk.download('omw-1.4')
 
-download_nltk_data()
+# download_nltk_data()
 
 from src.data_cleaner import load_project_data
 from src.map_visualizations import (
