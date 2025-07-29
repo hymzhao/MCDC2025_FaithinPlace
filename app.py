@@ -251,34 +251,30 @@ elif st.session_state.page == "Community & Workforce Impact":
         with col2:
             st.subheader("Deeper Insights")
             
-            # --- Metric 1: Multi-faceted Projects (Updated) ---
+            # --- REVISED: Multi-faceted Projects ---
+            st.markdown("#### Multi-faceted Projects") # Label
             num_multi_goal_orgs = filtered_df['Goal Categories'].apply(lambda x: len(x) > 1).sum()
             total_orgs = len(filtered_df)
             percent_multi_goal = (num_multi_goal_orgs / total_orgs * 100) if total_orgs > 0 else 0
-            st.metric(
-                label="Multi-faceted Projects",
-                value=f"{num_multi_goal_orgs} Projects", # Added units
-                help=f"{percent_multi_goal:.1f}% of organizations have goals in more than one impact category."
-            )
             
-            # --- Metric 2: Top Goal Synergy (Updated) ---
+            st.markdown(f"**{num_multi_goal_orgs} Projects**") # Value
+            st.caption(f"{percent_multi_goal:.1f}% of organizations have goals in more than one impact category.") # Help text
+            
+            # --- Top Goal Synergy ---
+            st.markdown("#### Top Goal Synergy") 
+
             pairs = filtered_df['Goal Categories'].apply(lambda x: list(combinations(sorted(x), 2)))
             pair_counts = Counter(p for sublist in pairs for p in sublist)
+            
             if pair_counts:
                 most_common_pair, count = pair_counts.most_common(1)[0]
-                st.metric(
-                    label="Top Goal Synergy",
-                    value=' and '.join(most_common_pair), # Use ' and ' for joining
-                    help=f"This combination appeared in {count} projects."
-                )
+                st.markdown(f"**{' and '.join(most_common_pair)}**") 
+                st.caption(f"This combination appeared in {count} projects.")
             else:
-                st.metric(
-                    label="Top Goal Synergy",
-                    value="N/A",
-                    help="No projects with overlapping goals found for the current selection."
-                )
+                st.markdown("**N/A**")
+                st.caption("No projects with overlapping goals found.")
 
-            st.write("##### Trees Planted per Impact Area")
+            st.write("#### Trees Planted per Impact Area")
             trees_per_cat = filtered_df.explode('Goal Categories').groupby('Goal Categories')['# Trees To Be Planted'].sum().sort_values(ascending=False)
             st.dataframe(trees_per_cat)
             

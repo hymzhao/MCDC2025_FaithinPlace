@@ -150,7 +150,7 @@ def categorize_project_goals(goals_list):
             categories.add(category)
 
     if not categories:
-        return ["General Improvement"] # Default category
+        return ["General Improvement"]
     return sorted(list(categories))
 
 @st.cache_data
