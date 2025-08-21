@@ -31,7 +31,8 @@ from src.map_visualizations import (
     create_layered_map,
     create_species_diversity_chart,
     create_goals_wordcloud,
-    create_impact_category_chart 
+    create_impact_category_chart,
+    create_tree_type_chart
 )
 
 st.markdown("""
@@ -97,7 +98,7 @@ div[data-testid="stSidebarNav"] button:hover {
 """, unsafe_allow_html=True)
 
 st.image("images/logowhite.png", use_column_width=True)
-st.title("MCDC Faith in Place 2025")
+st.title("Growing Justice: The Faith in Place Tree Equity Dashboard")
 
 if "page" not in st.session_state:
     st.session_state.page = "Project Overview"
@@ -107,8 +108,6 @@ if st.sidebar.button("Project Overview"):
     st.session_state.page = "Project Overview"
 if st.sidebar.button("Tree Planting Map"):
     st.session_state.page = "Tree Planting Map"
-if st.sidebar.button("Environmental Impact"):
-    st.session_state.page = "Environmental Impact"
 if st.sidebar.button("Community & Workforce Impact"):
     st.session_state.page = "Community & Workforce Impact"
 
@@ -118,51 +117,72 @@ df = load_project_data({
     'new_data': "data/usda_species_extracted_with_ollama_and_goals.csv"
 })
 
-filtered_df = df
-if df is not None:
-    st.sidebar.subheader("Global Filters")
-    if 'Organization Name' in df.columns:
-        organization_names = sorted(df['Organization Name'].unique().tolist())
-        all_orgs_option = "All Organizations (Select All)"
-        organization_names.insert(0, all_orgs_option)
+# Initialize filtered_df in case the data fails to load
+filtered_df = None
 
-        if "selected_organizations_filter" not in st.session_state:
-            st.session_state.selected_organizations_filter = [all_orgs_option]
+if df is not None:
+    # Start with a copy that we will progressively filter
+    filtered_df = df.copy()
+    
+    st.sidebar.subheader("Global Filters")
+
+    # --- NEW: STATE FILTER ---
+    if 'Project Location State' in df.columns:
+        states = sorted(df['Project Location State'].unique().tolist())
+        selected_states = st.sidebar.multiselect(
+            "Filter by State(s):",
+            states,
+            default=states, # Default to all states selected
+            key="state_multiselect_filter"
+        )
+        # Apply the state filter first
+        if selected_states:
+            filtered_df = filtered_df[filtered_df['Project Location State'].isin(selected_states)]
+
+    # --- EXISTING: ORGANIZATION NAME FILTER ---
+    # This filter now works on the dataframe that may have already been filtered by state
+    if 'Organization Name' in filtered_df.columns:
+        # Get organization names from the *already filtered* df
+        organization_names = sorted(filtered_df['Organization Name'].unique().tolist())
+        all_orgs_option = "All Organizations"
+        organization_names.insert(0, all_orgs_option)
 
         selected_organizations = st.sidebar.multiselect(
             "Filter by Organization(s):",
             organization_names,
-            default=st.session_state.selected_organizations_filter,
+            default=all_orgs_option,
             key="org_multiselect_filter"
         )
-        st.session_state.selected_organizations_filter = selected_organizations
 
-        if all_orgs_option in selected_organizations or not selected_organizations:
-            filtered_df = df
-        else:
-            filtered_df = df[df['Organization Name'].isin(selected_organizations)]
+        # Only apply this filter if a specific organization is chosen
+        if all_orgs_option not in selected_organizations and selected_organizations:
+            filtered_df = filtered_df[filtered_df['Organization Name'].isin(selected_organizations)]
 
 # --- PAGE RENDERING ---
 
 if st.session_state.page == "Project Overview":
-    st.header("Project Overview and Motivation")
+    st.markdown("""
+    ## Our Mission: Growing a Just and Sustainable Future
 
-    st.write("""
-    The **Faith in Place Tree Equity and Forestry Workforce Initiative** is driven by a critical need to address
-    **environmental justice** in historically underserved communities across Illinois, Indiana, and Wisconsin.
-    In many of these areas, environmental inequities—such as lower tree canopy cover, higher pollution levels,
-    and reduced access to green spaces—contribute to a range of adverse health, social, and economic outcomes.
-    """)
+    The **Faith in Place Tree Equity and Forestry Workforce Initiative** is a direct response to environmental injustice in historically underserved communities across Illinois, Indiana, and Wisconsin. For too long, these communities have faced inequities like lower tree canopy cover, higher pollution, and reduced access to green spaces, leading to adverse health, social, and economic outcomes.
 
-    st.subheader("Our Vision: Data for Impact")
-    st.write("""
-    This dashboard aims to provide a **transparent, accessible, and data-driven view** of the project’s ecological and
-    social benefits. By establishing and tracking key metrics, we seek to:
-    * **Demonstrate the immediate impact** of tree planting efforts.
-    * Highlight broader contributions to **climate resilience, economic development, and community empowerment**.
-    * **Transform complex data into compelling narratives** that educate and inspire stakeholders.
-    * Show **tangible results** to foster community engagement and build momentum for future initiatives.
+    In partnership with the USDA Forest Service, Faith in Place is empowering local leaders by distributing 65 to 85 grants to community organizations and Houses of Worship. This initiative is about more than just planting trees; it's a four-year commitment to fostering workforce development, stimulating local economies, and empowering communities to become active stewards of their environment.
+
+    ## The Power of Data: Making Our Impact Visible
+
+    This dashboard was created to provide a transparent, data-driven view of the project’s profound ecological and social benefits. Our goal is to transform complex data into a compelling narrative that educates, inspires, and demonstrates tangible results.
+
+    By tracking key metrics from the very beginning of the grant cycle, we aim to:
+    * **Visualize** the geographic scope and diversity of tree planting efforts.
+    * **Measure** the initiative's contribution to climate resilience, community well-being, and economic growth.
+    * **Ensure** that the benefits of this work are visible, measurable, and accessible to all stakeholders, from community members to funders.
+
+    This tool serves as a living foundation for understanding and amplifying the impact of the USDA Forest Service Tree Grant, telling the story of environmental justice and community resilience in a way that resonates with everyone.
     """)
+    st.markdown("---")
+    if filtered_df is not None:
+        st.caption("A snapshot of the data driving these insights:")
+        st.dataframe(filtered_df.head(5))
 
     st.subheader("Navigating the Dashboard")
     st.write("""
@@ -172,7 +192,6 @@ if st.session_state.page == "Project Overview":
     * **Project Overview (You Are Here):** Understand the project's mission, goals, and how to use this dashboard.
     * **Tree Planting Map:** Visualize tree planting locations and quantities across the Midwest, with key metrics.
         Use the **"Filter by Organization(s)"** dropdown in the sidebar to narrow down the data displayed.
-    * **Environmental Impact:** Explore estimated ecological benefits like carbon sequestration, stormwater management, and air quality improvements.
     * **Community & Workforce Impact:** Discover insights into jobs created, volunteer participation, and community engagement efforts.
     """)
 
@@ -233,8 +252,13 @@ elif st.session_state.page == "Tree Planting Map":
                 st.image("images/treequity.png", caption="Components of the Tree Equity Score.")
 
         st.markdown("---")
-        st.header("Species Diversity")
-        create_species_diversity_chart(filtered_df)
+        st.header("Species Diversity Analysis")
+        # Add a subheader for the new chart
+        st.subheader("Projects by Tree Category")
+        create_tree_type_chart(filtered_df) # Call the new function
+
+        with st.expander("See Detailed Species Breakdown"):
+            create_species_diversity_chart(filtered_df)
 
     elif filtered_df.empty:
         st.warning("No data available for the selected organization(s). Please adjust your filter.")
@@ -266,6 +290,8 @@ elif st.session_state.page == "Community & Workforce Impact":
 
             # --- Trees Planted per Impact Area ---
             st.write("##### Trees Planted per Impact Area")
+            st.caption("Note: A single project's trees may be counted in multiple categories.")
+            
             trees_per_cat = filtered_df.explode('Goal Categories').groupby('Goal Categories')['# Trees To Be Planted'].sum().sort_values(ascending=False)
             st.dataframe(trees_per_cat)
             
