@@ -1,0 +1,10 @@
+# requirements.txt
+streamlit
+pandas
+plotly-express
+wordcloud
+geopandas
+nltk
+
+# use the below line to install the listed libraries in your virtual environment
+# pip install -r requirements.txt
