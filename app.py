@@ -97,7 +97,7 @@ div[data-testid="stSidebarNav"] button:hover {
 </style>
 """, unsafe_allow_html=True)
 
-st.image("images/logowhite.png", use_column_width=True)
+st.image("images/logowhite.png", use_container_width=True)
 st.title("Growing Justice: The Faith in Place Tree Equity Dashboard")
 
 if "page" not in st.session_state:
