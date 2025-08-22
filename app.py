@@ -98,7 +98,7 @@ div[data-testid="stSidebarNav"] button:hover {
 """, unsafe_allow_html=True)
 
 st.image("images/logowhite.png", use_container_width=True)
-st.title("Growing Justice: The Faith in Place Tree Equity Dashboard")
+st.title("The Faith in Place Tree Equity Dashboard")
 
 if "page" not in st.session_state:
     st.session_state.page = "Project Overview"
@@ -180,10 +180,6 @@ if st.session_state.page == "Project Overview":
     This tool serves as a living foundation for understanding and amplifying the impact of the USDA Forest Service Tree Grant, telling the story of environmental justice and community resilience in a way that resonates with everyone.
     """)
     st.markdown("---")
-    if filtered_df is not None:
-        st.caption("A snapshot of the data driving these insights:")
-        st.dataframe(filtered_df.head(5))
-
     st.subheader("Navigating the Dashboard")
     st.write("""
     Use the **sidebar on the left** to explore different aspects of the Faith in Place Tree Grant projects:
@@ -206,7 +202,7 @@ if st.session_state.page == "Project Overview":
     if filtered_df is not None:
         st.caption("A snapshot of the data driving these insights:")
         st.dataframe(filtered_df.head(5))
-
+    st.markdown("---")
     st.subheader("Our Team")
     st.write("""
     This initiative is a collaborative effort between **Faith in Place** and the **Metropolitan Chicago Data-Science Corps (MCDC)**.
