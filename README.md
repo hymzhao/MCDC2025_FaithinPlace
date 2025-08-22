@@ -1,4 +1,4 @@
-# Growing Justice: The Faith in Place Tree Equity Dashboard
+# The Faith in Place Tree Equity Dashboard
 
 This repository contains the source code for an interactive data dashboard built for **Faith in Place**. The dashboard visualizes the impact of the USDA Forest Service Tree Grant initiative, which aims to promote environmental justice by funding tree planting projects in underserved communities across Illinois, Indiana, and Wisconsin.
 
