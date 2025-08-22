@@ -13,7 +13,7 @@ To run this application on your own machine, follow these steps.
 1.  **Clone the Repository:**
     Open your terminal and run the following command to clone the project files.
     ```
-    git clone [https://github.com/hymzhao/MCDC2025_FaithinPlace.git](https://github.com/hymzhao/MCDC2025_FaithinPlace.git)
+    git clone https://github.com/hymzhao/MCDC2025_FaithinPlace.git
     ```
 2.  **Navigate to the Directory:**
     ```
